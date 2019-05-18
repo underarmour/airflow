@@ -74,6 +74,7 @@ def copy_log_to_s3(dag_id, task_id, timestamp, local_log_path):
     bucket = conf.get('core', 'S3_LOGGING_BUCKET')
     prefix = conf.get('core', 'S3_LOGGING_KEY_PREFIX')
     key = prefix + '/'.join([dag_id, task_id, timestamp])
+    print('Logging to S3 location: s3://{}/{}'.format(bucket, key))
     s3 = boto3.client(
         's3',
         aws_access_key_id=aws_key_id,
