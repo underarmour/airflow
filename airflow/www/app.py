@@ -806,8 +806,7 @@ class Airflow(BaseView):
             )
             s3_path = 's3://{}/{}'.format(bucket, key)
             with BytesIO() as f:
-                f = BytesIO()
-                f.write(b'Retrieving remote log file from S3 at ')
+                f.write(b'Retrieving log file from S3 at ')
                 f.write(s3_path.encode('utf-8'))
                 f.write(b'\n')
                 try:
