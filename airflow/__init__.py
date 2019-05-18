@@ -12,6 +12,12 @@ import os
 import sys
 from airflow.configuration import conf
 from airflow.models import DAG
+
+# This stops the deprecation warning spam from Flask
+import warnings
+from flask.exthook import ExtDeprecationWarning
+warnings.simplefilter('ignore', ExtDeprecationWarning)
+
 from flask.ext.admin import BaseView
 
 
