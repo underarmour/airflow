@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import dateutil.parser
 from functools import wraps
 import inspect
+from io import BytesIO
 import json
 import logging
 import os
@@ -14,6 +15,7 @@ import socket
 import sys
 import time
 
+import boto3
 from flask._compat import PY2
 from flask import (
     Flask, url_for, Markup, Blueprint, redirect,
@@ -780,14 +782,49 @@ class Airflow(BaseView):
             form=form,
             title=title,)
 
+
     @expose('/log')
     @login_required
     def log(self):
+
         BASE_LOG_FOLDER = os.path.expanduser(
             conf.get('core', 'BASE_LOG_FOLDER'))
         dag_id = request.args.get('dag_id')
         task_id = request.args.get('task_id')
         execution_date = request.args.get('execution_date')
+
+        def get_s3_log():
+            aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY_ID')
+            aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_ACCESS_KEY')
+            bucket = conf.get('core', 'S3_LOGGING_BUCKET')
+            prefix = conf.get('core', 'S3_LOGGING_KEY_PREFIX')
+            key = prefix + '/'.join([dag_id, task_id, execution_date])
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=aws_key_id,
+                aws_secret_access_key=aws_secret,
+            )
+            s3_path = 's3://{}/{}'.format(bucket, key)
+            with BytesIO() as f:
+                f = BytesIO()
+                f.write(b'Retrieving remote log file from S3 at ')
+                f.write(s3_path.encode('utf-8'))
+                f.write(b'\n')
+                try:
+                    s3.download_fileobj(
+                        Fileobj=f,
+                        Bucket=bucket,
+                        Key=key,
+                    )
+                    success = True
+                except Exception as err:
+                    f.write('Error encountered while trying to retrieve file:\n{}'.format(err).encode('utf-8'))
+                    success = False
+                f.write(b'\n')
+                f.seek(0)
+                output = f.read()
+            return success, output
+
         dag = dagbag.get_dag(dag_id)
         log_relative = "/{dag_id}/{task_id}/{execution_date}".format(
             **locals())
@@ -804,7 +841,15 @@ class Airflow(BaseView):
         form = DateTimeForm(data={'execution_date': dttm})
         if ti:
             host = ti.hostname
-            if socket.gethostname() == host:
+
+            s3_success = False
+            if conf.get('core', 'ENABLE_S3_LOGGING'):
+                s3_success, s3_log = get_s3_log()
+                log += s3_log
+
+            if s3_success:
+                pass
+            elif socket.gethostname() == host:
                 try:
                     f = open(loc)
                     log += "".join(f.readlines())

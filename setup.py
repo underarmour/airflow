@@ -41,6 +41,7 @@ setup(
     scripts=['airflow/bin/airflow'],
     install_requires=[
         'alembic>=0.8.0',
+        'boto3>=1.9.44',
         'celery>=3.1.17',
         'chartkick>=0.4.2',
         'dill>=0.2.2',

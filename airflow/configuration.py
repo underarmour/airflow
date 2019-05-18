@@ -32,6 +32,11 @@ defaults = {
         'parallelism': 32,
         'load_examples': True,
         'plugins_folder': None,
+        'enable_s3_logging': False,
+        's3_logging_bucket': None,
+        's3_logging_key_prefix': '',
+        's3_logging_aws_access_key_id': None,
+        's3_logging_aws_secret_access_key': None,
     },
     'webserver': {
         'base_url': 'http://localhost:8080',

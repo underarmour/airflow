@@ -9,6 +9,8 @@ import os
 import subprocess
 import sys
 
+import boto3
+
 import airflow
 from airflow import jobs, settings, utils
 from airflow.configuration import conf
@@ -64,6 +66,24 @@ def backfill(args):
         local=args.local,
         donot_pickle=args.donot_pickle,
         ignore_dependencies=args.ignore_dependencies)
+
+
+def copy_log_to_s3(dag_id, task_id, timestamp, local_log_path):
+    aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY_ID')
+    aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_ACCESS_KEY')
+    bucket = conf.get('core', 'S3_LOGGING_BUCKET')
+    prefix = conf.get('core', 'S3_LOGGING_KEY_PREFIX')
+    key = prefix + '/'.join([dag_id, task_id, timestamp])
+    s3 = boto3.client(
+        's3',
+        aws_access_key_id=aws_key_id,
+        aws_secret_access_key=aws_secret,
+    )
+    return s3.upload_file(
+        Filename=local_log_path,
+        Bucket=bucket,
+        Key=key,
+    )
 
 
 def run(args):
@@ -156,6 +176,15 @@ def run(args):
             force=args.force)
         executor.heartbeat()
         executor.end()
+        if conf.get('core', 'ENABLE_S3_LOGGING'):
+            for handler in logging.getLogger().handlers:
+                handler.flush()
+            copy_log_to_s3(
+                dag_id=args.dag_id,
+                task_id=args.task_id,
+                timestamp=iso,
+                local_log_path=filename,
+            )
 
 
 def task_state(args):

@@ -1,5 +1,6 @@
 alembic
 boto
+boto3
 celery
 chartkick
 cryptography
