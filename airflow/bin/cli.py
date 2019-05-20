@@ -69,8 +69,8 @@ def backfill(args):
 
 
 def copy_log_to_s3(dag_id, task_id, timestamp, local_log_path):
-    aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY_ID')
-    aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_ACCESS_KEY')
+    aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY')
+    aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_KEY')
     bucket = conf.get('core', 'S3_LOGGING_BUCKET')
     prefix = conf.get('core', 'S3_LOGGING_KEY_PREFIX')
     key = prefix + '/'.join([dag_id, task_id, timestamp])

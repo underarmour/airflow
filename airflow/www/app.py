@@ -794,8 +794,8 @@ class Airflow(BaseView):
         execution_date = request.args.get('execution_date')
 
         def get_s3_log():
-            aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY_ID')
-            aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_ACCESS_KEY')
+            aws_key_id = conf.get('core', 'S3_LOGGING_AWS_ACCESS_KEY')
+            aws_secret = conf.get('core', 'S3_LOGGING_AWS_SECRET_KEY')
             bucket = conf.get('core', 'S3_LOGGING_BUCKET')
             prefix = conf.get('core', 'S3_LOGGING_KEY_PREFIX')
             key = prefix + '/'.join([dag_id, task_id, execution_date])

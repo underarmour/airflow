@@ -35,8 +35,8 @@ defaults = {
         'enable_s3_logging': False,
         's3_logging_bucket': None,
         's3_logging_key_prefix': '',
-        's3_logging_aws_access_key_id': None,
-        's3_logging_aws_secret_access_key': None,
+        's3_logging_aws_access_key': None,
+        's3_logging_aws_secret_key': None,
     },
     'webserver': {
         'base_url': 'http://localhost:8080',
